@@ -264,12 +264,14 @@ Create a file "my_file.sh" for the "user_data" argument then copy and paste the 
     sudo systemctl start httpd.service
     sudo systemctl enable httpd.service
 
+Store the file in the root path to avoid Terraform issues when the compiler is searching the file.
+
 ## 4. Change arguments 
 
 Change the following arguments to your desired values (do not forget to set a DNS server in AWS and add the dot at the end):
 
-environment = "environment_name"
-dns_name = "mydnsname.com."
+    environment = "environment_name"
+    dns_name = "mydnsname.com."
 
 ## 5. Terraform init
 
