@@ -1,5 +1,5 @@
 # AWS VPC Terraform module
-AWS Terraform modules create VPC resources on AWS and run an Apache web server.
+AWS Terraform modules create VPC resources on AWS and run an Apache web server in the autoscaling groups.
 This project was created with Terraform 1.3 and is based on the autoscaling group EC2 with the specified arguments.
 
 # Usage
@@ -11,8 +11,8 @@ This project was created with Terraform 1.3 and is based on the autoscaling grou
 ### Module
 
 ```hcl
-module "asg-infrastructure" {
-  source      = "enriquecs095/asg-infrastructure/aws"
+module "autoscaling-groups-infrastructure" {
+  source      = "enriquecs095/autoscaling-groups-infrastructure/aws"
   version     = "4.34.0"
   name        = "asg"
   environment = "environment_name"
@@ -195,12 +195,12 @@ module "asg-infrastructure" {
 ```hcl
 output "alb_dns_name_asg" {
   description = "The DNS name of the application load balancer"
-  value       = module.asg-infrastructure.alb_dns_name_asg
+  value       = module.autoscaling-groups-infrastructure.alb_dns_name_asg
 }
 
 output "url_asg" {
   description = "The url of the dns server for the web application"
-  value       =  module.asg-infrastructure.url_asg
+  value       =  module.autoscaling-groups-infrastructure.url_asg
 }
 ```
 ### Configuration file 
@@ -234,7 +234,7 @@ provider "aws" {
 ```
 # Stand up the infrastructure
 
-Follow steps #1, #9, and #10 if you want to create an S3 bucket on AWS to store the terraform state file remotely.
+Follow steps #1, #10, and #11 if you want to create an S3 bucket on AWS to store the terraform state file remotely.
 
 ## 1. Create a bucket
 
@@ -252,6 +252,8 @@ This command imports the provided public key to a single region: **
 
     aws ec2 import-key-pair --key-name "key_pair_name" --public-key-material fileb://~/.ssh/key_pair_name.pub --region region-name 
 
+Finally, change "key_pair_name" from the "key_pair" argument to the previous key already created on AWS.
+
 ## 3. Create a file that execute the commands to install apache
 
 Create a file "my_file.sh" for the "user_data" argument then copy and paste the following commands:
@@ -262,7 +264,14 @@ Create a file "my_file.sh" for the "user_data" argument then copy and paste the 
     sudo systemctl start httpd.service
     sudo systemctl enable httpd.service
 
-## 4. Terraform init
+## 4. Change arguments 
+
+Change the following arguments to your desired values (do not forget to set a DNS server in AWS and add the dot at the end):
+
+environment = "environment_name"
+dns_name = "mydnsname.com."
+
+## 5. Terraform init
 
 Run the following command in the project directory and change the parameters values:
 
@@ -272,13 +281,13 @@ Run the following command in the project directory and change the parameters val
 
     terraform init
 
-## 5. Terraform plan
+## 6. Terraform plan
 
 After run the previous command, run the following command:
 
     terraform plan 
 
-## 6. Terraform apply 
+## 7. Terraform apply 
 
 Finally run the command below:
 
@@ -290,7 +299,7 @@ Finally run the command below:
 
     terraform apply -auto-approve
 
-## 7. Terraform destroy
+## 8. Terraform destroy
 
 The following command will destroy the resources:
 
@@ -302,13 +311,13 @@ The following command will destroy the resources:
 
     terraform destroy -auto-approve
 
-## 8. Removing the working directory
+## 9. Removing the working directory
 
 Run the following command for deleting the ".terraform" directory and ".terraform.lock.hcl" file:
 
     rm -r .terraform/ .terraform.lock.hcl
 
-## 9.Emptying the bucket
+## 10.Emptying the bucket
 
 The following rm command removes objects that have the key name prefix doc, for example, doc/doc1 and doc/doc2:
 
@@ -318,19 +327,19 @@ Use the following command to remove all objects without specifying a prefix:
 
     aws s3 rm s3://bucket-name --recursive 
 
-## 10. Deleting the bucket
+## 11. Deleting the bucket
 
 Run the following command and change the parameter "bucket_name" for the name of the bucket you want to delete:
 
     aws s3api delete-bucket --bucket bucket-name 
 
-## 11. Deleting the key pairs
+## 12. Deleting the key pairs
 
 Run the following command and change the parameter values:**
 
     aws ec2 delete-key-pair --key-name "my-key" --region region-name 
 
-** If you need to store/delete the key pair in more than one region, change the "region-name" and run the previous command as needed. In this case we will need to execute the command on the regions "us-east-1" and "us-west-2".
+** If you need to store/delete the key pair in more than one region, change the "region-name" and run the previous command as needed. In this case, we will need to execute the command on the region "us-east-1" only.
 
 ## Documentation
 
